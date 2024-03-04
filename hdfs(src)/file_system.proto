@@ -1,0 +1,131 @@
+// file_system.proto
+
+syntax = "proto3";
+
+package file_system;
+
+
+service FileSystemService {
+    // File metadata management
+    rpc CreateFile (FileRequest) returns (FileResponse);
+    rpc DeleteFile (FileRequest) returns (FileResponse);
+    rpc RenameFile (RenameRequest) returns (FileResponse);
+    rpc GetFileMetadata (FileRequest) returns (FileMetadataResponse);
+
+    // Data storage
+    rpc WriteFile (FileRequest) returns (DataNodeListResponse);
+    rpc WriteData (DataRequest_main) returns (FileResponse);
+    rpc Commit (DataRequest) returns (FileResponse);
+    rpc ClientWriteComplete (DataRequest_main) returns (FileResponse);
+    rpc ReadData (DataRequest) returns (DataResponse);
+    rpc GetDatanode (FileRequest) returns (DataNodeListResponse);
+    rpc GetFileVersion (FileRequest) returns (FileVersion);
+    rpc Prepare (FileRequest) returns (FileResponse);
+
+    // Newly added file system operations
+    rpc ListFiles (DirectoryRequest) returns (FileListResponse);
+    rpc MakeDirectory (DirectoryRequest) returns (FileResponse);
+    rpc ChangeDirectory (DirectoryRequest) returns (FileResponse);
+
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+
+    // Permission set
+    rpc ChangePermissions (FileRequest) returns (FileResponse);
+    rpc AddGroup (FileRequest) returns (FileResponse);
+
+    // File Lock
+    rpc LockFile (LockRequest) returns (FileResponse);
+    rpc UnlockFile (LockRequest) returns (FileResponse);
+
+    // copy namenode
+    rpc GetMetadata (FileRequest) returns (MetadataResponse);
+}
+
+message FileRequest {
+    string file_path = 1;
+    string owner = 2;
+    string permissions = 3;
+}
+
+message RenameRequest {
+    string old_path = 1;
+    string new_path = 2;
+}
+
+message FileResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message FileMetadataResponse {
+    FileMetadata metadata = 1;
+}
+
+message DataRequest {
+    string file_path = 1;
+    bytes data = 2;
+    int32 offset = 3;
+}
+
+message DataRequest_main {
+    string file_path = 1;
+    bytes data = 2;
+    int32 offset = 3;
+    repeated string nodes = 4;
+    int32 version = 5;
+}
+message DataResponse {
+    bytes data = 1;
+    int32 version = 2;
+}
+
+message FileMetadata {
+    string file_path = 1;
+    int64 size = 2;
+    repeated string data_node_addresses = 3;
+    string owner = 4;
+    repeated string group = 5;
+    string permissions = 6;
+    int32 version = 7;
+    // Other metadata fields can be added as needed
+}
+
+message DataNodeListResponse {
+    repeated string data_node_addresses = 1;
+    bool success = 2;
+    string message = 3;
+}
+
+
+message DirectoryRequest {
+    string directory = 1;
+    string new_directory = 2;
+}
+
+message FileListResponse {
+    repeated string files = 1;
+}
+
+message HeartbeatRequest {
+    string data_node_address = 1;
+}
+
+message HeartbeatResponse {
+    string status = 1;
+}
+
+message LockRequest {
+    string file_path = 1;
+    string owner = 2;
+    string type = 3;
+}
+
+message FileVersion {
+    bool success = 1;
+    int32 version = 2;
+}
+
+
+message MetadataResponse {
+    repeated FileMetadata metadata = 1;
+}
